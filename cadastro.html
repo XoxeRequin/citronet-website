@@ -23,7 +23,10 @@
     }
 
     * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
+    html {
+      scroll-behavior: smooth;
+      overflow-y: auto;
+    }
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
@@ -34,6 +37,7 @@
         radial-gradient(circle at 90% 15%, rgba(243,156,46,.12), transparent 26rem),
         var(--bg);
       overflow-x: hidden;
+      overflow-y: visible;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -174,6 +178,7 @@
 
     .form-card {
       max-width: 760px;
+      width: 100%;
       margin: 0 auto;
       border-radius: var(--radius);
       background: var(--card);
@@ -182,22 +187,51 @@
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
       padding: 24px 16px;
-      overflow: hidden;
+      height: auto;
+      overflow: visible;
+      transition: all .35s ease-in-out;
     }
 
     .form-card iframe {
       width: 100%;
-      height: 2203px;
+      height: 2850px;
+      min-height: 2850px;
       border: 0;
       border-radius: 16px;
       display: block;
+      transition: height .35s ease-in-out, min-height .35s ease-in-out;
+    }
+
+    /* Compact collapsed state when form is submitted */
+    .form-card.is-submitted {
+      padding: 18px 16px;
+      box-shadow: 0 16px 45px rgba(32, 184, 90, 0.16);
+      border-color: rgba(32, 184, 90, 0.32);
+    }
+    .form-card.is-submitted iframe {
+      height: 380px !important;
+      min-height: 380px !important;
     }
 
     /* Green Continue Button below Form */
     .form-actions {
       max-width: 760px;
-      margin: 28px auto 0;
+      margin: 32px auto 0;
       text-align: center;
+      padding-bottom: 24px;
+    }
+
+    .notice-submitted {
+      margin-bottom: 18px;
+      padding: 14px 20px;
+      border-radius: 16px;
+      background: rgba(32, 184, 90, 0.12);
+      border: 1px solid rgba(32, 184, 90, 0.30);
+      color: #166534;
+      font-size: .95rem;
+      font-weight: 600;
+      line-height: 1.45;
+      animation: fadeInSlide .4s ease;
     }
 
     .btn-continue-wa {
@@ -221,6 +255,26 @@
       box-shadow: 0 16px 36px rgba(32, 184, 90, 0.38);
     }
 
+    .btn-continue-wa.highlight-pulse {
+      animation: waPulse 1.8s infinite ease-in-out;
+    }
+
+    @keyframes waPulse {
+      0%, 100% {
+        box-shadow: 0 12px 30px rgba(32, 184, 90, 0.32);
+        transform: translateY(0);
+      }
+      50% {
+        box-shadow: 0 18px 45px rgba(32, 184, 90, 0.65);
+        transform: translateY(-2px);
+      }
+    }
+
+    @keyframes fadeInSlide {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     .btn-continue-wa svg {
       width: 22px;
       height: 22px;
@@ -232,6 +286,7 @@
       color: var(--muted);
       font-size: .84rem;
       margin-top: auto;
+      flex-shrink: 0;
     }
     .footer-inner {
       display: flex;
@@ -261,13 +316,26 @@
     .whatsapp-float:hover { transform: scale(1.08); }
     .whatsapp-float svg { width: 28px; height: 28px; fill: currentColor; }
 
+    @media (max-width: 768px) {
+      .form-card iframe {
+        height: 3100px;
+        min-height: 3100px;
+      }
+      .form-card.is-submitted iframe {
+        height: 380px !important;
+        min-height: 380px !important;
+      }
+    }
+
     @media (max-width: 560px) {
-      .container { width: min(100% - 28px, 1120px); }
+      .container { width: min(100% - 24px, 1120px); }
       nav { top: 9px; }
       .nav-logo { height: 38px; }
       .back-text { display: none; }
-      main { padding-top: 110px; }
-      .form-card { padding: 12px 6px; border-radius: 20px; }
+      main { padding-top: 105px; padding-bottom: 50px; }
+      .form-card { padding: 12px 6px; border-radius: 20px; overflow: visible; }
+      .form-card iframe { height: 3350px; min-height: 3350px; }
+      .form-card.is-submitted iframe { height: 380px !important; min-height: 380px !important; }
       .btn-continue-wa { width: 100%; padding: 16px 20px; font-size: 1rem; }
       .footer-inner { flex-direction: column; text-align: center; }
       .whatsapp-float { right: 16px; bottom: 16px; }
@@ -346,12 +414,15 @@
         <p>Preencha os dados abaixo para verificar a disponibilidade de cobertura e agendar sua instalação.</p>
       </div>
 
-      <div class="form-card">
-        <iframe src="https://docs.google.com/forms/d/e/1FAIpQLScdeb_9XGM7OwEZb-HdN0rl9v79lZKdtWu0TDqo8SyoA8WqRw/viewform?embedded=true" width="640" height="2500" frameborder="0" marginheight="0" marginwidth="0">Carregando…</iframe>
+      <div class="form-card" id="form-card">
+        <iframe id="google-form-iframe" src="https://docs.google.com/forms/d/e/1FAIpQLScdeb_9XGM7OwEZb-HdN0rl9v79lZKdtWu0TDqo8SyoA8WqRw/viewform?embedded=true" width="100%" height="2850" frameborder="0" marginheight="0" marginwidth="0">Carregando…</iframe>
       </div>
 
-      <div class="form-actions">
-        <a class="btn-continue-wa" href="https://wa.me/5584991695106?text=Formul%C3%A1rio%20preenchido!" target="_blank" rel="noopener">
+      <div class="form-actions" id="form-actions">
+        <div id="notice-submitted" class="notice-submitted" style="display: none;">
+          🎉 <strong>Formulário enviado com sucesso!</strong> Clique no botão abaixo para agilizar a verificação da sua instalação com nossa equipe.
+        </div>
+        <a class="btn-continue-wa" id="btn-continue-wa" href="https://wa.me/5584991695106?text=Formul%C3%A1rio%20preenchido!" target="_blank" rel="noopener">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M20.5 3.5A11.84 11.84 0 0 0 12.08 0C5.53 0 .2 5.32.2 11.88c0 2.09.55 4.13 1.59 5.93L.1 24l6.34-1.66a11.88 11.88 0 0 0 5.64 1.43h.01c6.55 0 11.88-5.33 11.88-11.89 0-3.18-1.24-6.17-3.47-8.38ZM12.09 21.8h-.01a9.88 9.88 0 0 1-5.04-1.38l-.36-.21-3.76.99 1-3.67-.23-.38a9.87 9.87 0 0 1-1.51-5.27C2.18 6.42 6.62 2 12.09 2a9.84 9.84 0 0 1 7 2.9 9.88 9.88 0 0 1 2.89 7.01c0 5.47-4.44 9.89-9.89 9.89Zm5.42-7.4c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.67-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.61-.92-2.21-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.49s1.07 2.89 1.22 3.09c.15.2 2.1 3.21 5.08 4.5.71.31 1.26.5 1.69.64.71.23 1.35.2 1.86.12.57-.09 1.76-.72 2-1.42.25-.7.25-1.3.17-1.42-.07-.12-.27-.2-.57-.35Z"/>
           </svg>
@@ -435,6 +506,70 @@
     });
 
     document.getElementById("year").textContent = new Date().getFullYear();
+
+    // Track iframe load events to distinguish initial render from form submission
+    let iframeLoadCount = 0;
+
+    function handleGoogleFormLoad() {
+      iframeLoadCount++;
+
+      // First load (iframeLoadCount === 1): initial render while the user fills the form.
+      // Retain full comfortable working height and keep success notice hidden.
+      if (iframeLoadCount <= 1) {
+        const card = document.getElementById("form-card");
+        const iframe = document.getElementById("google-form-iframe");
+        const notice = document.getElementById("notice-submitted");
+        const btn = document.getElementById("btn-continue-wa");
+
+        if (card) {
+          card.classList.remove("is-submitted");
+        }
+        if (iframe) {
+          iframe.style.height = "";
+          iframe.style.minHeight = "";
+        }
+        if (notice) {
+          notice.style.display = "none";
+        }
+        if (btn) {
+          btn.classList.remove("highlight-pulse");
+        }
+        return;
+      }
+
+      // Subsequent load (iframeLoadCount > 1): Google Form submitted and redirected to confirmation page!
+      const card = document.getElementById("form-card");
+      const iframe = document.getElementById("google-form-iframe");
+      const notice = document.getElementById("notice-submitted");
+      const btn = document.getElementById("btn-continue-wa");
+
+      if (card) {
+        card.classList.add("is-submitted");
+      }
+      if (iframe) {
+        iframe.style.height = "380px";
+        iframe.style.minHeight = "380px";
+      }
+      if (notice) {
+        notice.style.display = "block";
+      }
+      if (btn) {
+        btn.classList.add("highlight-pulse");
+      }
+
+      // Smoothly scroll to bring the confirmation card and continue button directly into view
+      setTimeout(() => {
+        if (card) {
+          const topOffset = card.getBoundingClientRect().top + window.pageYOffset - 110;
+          window.scrollTo({ top: Math.max(0, topOffset), behavior: "smooth" });
+        }
+      }, 150);
+    }
+
+    const formIframeElem = document.getElementById("google-form-iframe");
+    if (formIframeElem) {
+      formIframeElem.addEventListener("load", handleGoogleFormLoad);
+    }
   </script>
 </body>
 </html>
