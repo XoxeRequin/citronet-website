@@ -1,0 +1,8 @@
+{
+  "name": "Citronet",
+  "description": "Citronet — feito para ir além. Internet rápida, simples e acessível em Parnamirim.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

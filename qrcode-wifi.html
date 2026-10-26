@@ -1,0 +1,1807 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f1861f">
+  <meta name="description" content="Gerador de Placa Wi-Fi com QR Code Citronet. Gere e baixe placas personalizadas em PNG alta resolução (2480x3508) e PDF (A4, A5, A6).">
+  <title>Gerador de Placa QR Code Wi-Fi | Citronet</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 520 220'><style>.c2{fill:%23f1861f}.c3{fill:%23e85f1e}.c4{fill:%23f39c2e}</style><path class='c2' d='M377.71 143.04c-19.33-16.08-43.14-25.39-68.23-26.78-28.3-1.56-55.91 7.03-78.91 23.54 8.04-7.36 17.38-13.02 27.2-17.78 14.44-6.63 29.84-10.48 45.75-10.86 29.71-.97 58.42 10.03 79.77 30.69l-5.58 1.18z'/><path class='c2' d='M150.18 99.11c-36.69 28.69-63.17 67.05-78.08 110.98 8.9-41.71 30.55-79.75 60.56-109.23 45.68-44.88 108.82-67.08 172.56-60.79 46.51 4.59 90.46 23.9 125.34 55.15.21.19.38.24.25.68-41.05-30.31-91.16-46.5-142.36-45.7-50.19.79-98.68 17.96-138.26 48.91z'/><path class='c3' d='M299.36 212.04c-5.22-3.24-6.87-8.74-5.79-14.65l144.89-77-131.79 90.03c-2.19 1.58-4.56 2.14-7.31 1.63z'/><path class='c3' d='M424.36 82.53c-34.8-29.83-77-48.4-122.38-53.57l-.13-28.85c54.96 2.12 107.1 23.89 147.42 61.02l-24.92 21.41z'/><path class='c3' d='M516.13 171.5l-27.34.38c-11.98-29.22-29.4-55.33-51.86-77.8l24.75-20.65c26.03 27.91 44.59 61.35 54.45 98.07z'/><path class='c2' d='M225.12 33.52c-20.76 4.87-40.35 12.43-58.92 22.6l-10.3-11.08C193.97 17.04 239.65 1.27 286.79 0l.2 27.76c-20.96-.95-41.47 1.02-61.88 5.76z'/><path class='c4' d='M152.1 64.6c-26.02 16.56-47.08 37.62-65.4 62.54 13.51-28.12 33.39-52.17 56.65-72.28l8.75 9.74z'/><path class='c2' d='M415.11 197.34c-5.09-13.39-11.46-26.08-20.91-37.47 1.18-.4 2.37-.8 3.55-1.2 7.82 11.6 14.29 24.39 17.36 38.67z'/></svg>">
+
+  <!-- External CDNs for high-res rendering and PDF exports -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    :root {
+      --orange: #f1861f;
+      --orange-2: #e85f1e;
+      --gold: #f39c2e;
+      --dark: #2e3439;
+      --muted: #667078;
+      --bg: #fafafa;
+      --card-bg: rgba(255, 255, 255, 0.85);
+      --card-border: rgba(46, 52, 57, 0.10);
+      --input-bg: #ffffff;
+      --input-border: rgba(46, 52, 57, 0.16);
+      --text: #2e3439;
+      --text-muted: #667078;
+      --shadow: 0 20px 60px rgba(46, 52, 57, 0.08);
+      --radius: 20px;
+    }
+
+    html.dark {
+      --dark: #fafafa;
+      --muted: #9ba4ae;
+      --bg: #0f1215;
+      --card-bg: rgba(26, 30, 35, 0.88);
+      --card-border: rgba(255, 255, 255, 0.10);
+      --input-bg: #161a1f;
+      --input-border: rgba(255, 255, 255, 0.16);
+      --text: #f0f3f6;
+      --text-muted: #9ba4ae;
+      --shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 10% 0%, rgba(241, 134, 31, 0.14), transparent 30rem),
+        radial-gradient(circle at 90% 15%, rgba(243, 156, 46, 0.12), transparent 26rem),
+        var(--bg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background-color .3s ease, color .3s ease;
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button, input, select { font: inherit; }
+
+    /* Animated background orbs */
+    .orb {
+      position: fixed;
+      z-index: -1;
+      width: 380px;
+      height: 380px;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: .16;
+      pointer-events: none;
+      animation: drift 16s ease-in-out infinite alternate;
+    }
+    .orb.one { background: var(--orange); top: 5%; left: -140px; }
+    .orb.two { background: var(--gold); right: -160px; top: 45%; animation-delay: -6s; }
+
+    @keyframes drift {
+      from { transform: translate3d(0,0,0) scale(1); }
+      to { transform: translate3d(60px,30px,0) scale(1.15); }
+    }
+
+    .container {
+      width: min(1200px, calc(100% - 36px));
+      margin: auto;
+    }
+
+    /* Top Navigation */
+    nav {
+      position: sticky;
+      top: 14px;
+      z-index: 50;
+      width: min(1200px, calc(100% - 28px));
+      margin: 14px auto 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 18px;
+      border: 1px solid var(--card-border);
+      background: var(--card-bg);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-radius: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+      transition: border-color .3s, background-color .3s;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .nav-logo-svg {
+      height: 40px;
+      width: auto;
+      display: block;
+    }
+
+    .nav-badge-pill {
+      font-size: .78rem;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(241, 134, 31, 0.15);
+      color: var(--orange-2);
+      border: 1px solid rgba(241, 134, 31, 0.25);
+      letter-spacing: .02em;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .theme-toggle-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      color: var(--text);
+      cursor: pointer;
+      font-size: .84rem;
+      font-weight: 650;
+      transition: transform .2s, border-color .2s, background .2s;
+    }
+    .theme-toggle-btn:hover {
+      transform: translateY(-1px);
+      border-color: var(--orange);
+    }
+    .theme-toggle-btn svg {
+      width: 17px;
+      height: 17px;
+      fill: currentColor;
+    }
+
+    .nav-back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: .86rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      transition: color .2s;
+    }
+    .nav-back-link:hover {
+      color: var(--orange-2);
+    }
+
+    /* Main Page Layout */
+    main {
+      padding: 30px 0 60px;
+      flex: 1;
+    }
+
+    .header-intro {
+      text-align: center;
+      max-width: 680px;
+      margin: 0 auto 36px;
+    }
+    .eyebrow-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: .82rem;
+      font-weight: 800;
+      background: rgba(241, 134, 31, 0.12);
+      color: var(--orange-2);
+      border: 1px solid rgba(241, 134, 31, 0.22);
+      margin-bottom: 12px;
+    }
+    .eyebrow-tag::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--orange);
+      box-shadow: 0 0 0 4px rgba(241, 134, 31, 0.2);
+    }
+
+    h1 {
+      font-size: clamp(1.9rem, 4vw, 2.7rem);
+      font-weight: 900;
+      letter-spacing: -.03em;
+      line-height: 1.15;
+      margin: 0 0 10px;
+    }
+    .gradient-word {
+      color: var(--orange);
+      background: linear-gradient(90deg, var(--orange-2), var(--gold));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .header-intro p {
+      color: var(--text-muted);
+      font-size: 1.02rem;
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    /* Grid Layout: Config + Preview */
+    .generator-grid {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 32px;
+      align-items: start;
+    }
+
+    @media (max-width: 960px) {
+      .generator-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+    }
+
+    /* Config Cards */
+    .config-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 26px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      margin-bottom: 22px;
+      transition: border-color .3s, background-color .3s;
+    }
+
+    .config-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 14px;
+      margin-bottom: 20px;
+    }
+    .config-card-header h2 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+    .config-card-header .icon-bubble {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      background: rgba(241, 134, 31, 0.15);
+      color: var(--orange);
+      display: grid;
+      place-items: center;
+      font-size: .95rem;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+    .form-label {
+      display: block;
+      font-size: .88rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 7px;
+    }
+    .form-hint {
+      font-size: .78rem;
+      color: var(--text-muted);
+      margin-top: 5px;
+      line-height: 1.4;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .form-input, .form-select {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--input-border);
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: .95rem;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .form-input:focus, .form-select:focus {
+      outline: none;
+      border-color: var(--orange);
+      box-shadow: 0 0 0 3px rgba(241, 134, 31, 0.22);
+    }
+    .input-wrapper .input-icon-btn {
+      position: absolute;
+      right: 10px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      transition: color .2s;
+    }
+    .input-wrapper .input-icon-btn:hover {
+      color: var(--orange-2);
+    }
+    .input-wrapper .input-icon-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+
+    /* Radio / Segmented Groups */
+    .segmented-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 8px;
+      background: var(--input-bg);
+      padding: 5px;
+      border-radius: 12px;
+      border: 1px solid var(--input-border);
+    }
+    .segmented-option {
+      cursor: pointer;
+      text-align: center;
+      padding: 9px 8px;
+      border-radius: 8px;
+      font-size: .84rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      transition: background .2s, color .2s, transform .1s;
+      user-select: none;
+    }
+    .segmented-option.active {
+      background: linear-gradient(135deg, var(--orange), var(--orange-2));
+      color: white;
+      box-shadow: 0 3px 10px rgba(232, 95, 30, 0.3);
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      user-select: none;
+      font-size: .88rem;
+      font-weight: 650;
+      color: var(--text);
+    }
+    .checkbox-row input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--orange);
+      cursor: pointer;
+    }
+
+    /* Export Actions Container */
+    .export-box {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+    .export-box-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      margin: 0 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-main-export {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 20px;
+      border-radius: 14px;
+      border: 0;
+      background: linear-gradient(135deg, var(--orange), var(--orange-2));
+      color: white;
+      font-size: .98rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(232, 95, 30, 0.28);
+      transition: transform .2s, box-shadow .2s, opacity .2s;
+      margin-bottom: 12px;
+    }
+    .btn-main-export:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 28px rgba(232, 95, 30, 0.36);
+    }
+    .btn-main-export:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .pdf-actions-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .btn-pdf-format {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 11px 6px;
+      border-radius: 12px;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      color: var(--text);
+      cursor: pointer;
+      transition: transform .2s, border-color .2s, background .2s;
+    }
+    .btn-pdf-format:hover {
+      transform: translateY(-2px);
+      border-color: var(--orange);
+      background: rgba(241, 134, 31, 0.08);
+    }
+    .btn-pdf-format .pdf-title {
+      font-size: .92rem;
+      font-weight: 800;
+      color: var(--orange-2);
+    }
+    .btn-pdf-format .pdf-dim {
+      font-size: .72rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .secondary-actions-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .btn-action-alt {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 10px 14px;
+      border-radius: 11px;
+      border: 1px solid var(--input-border);
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: .84rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: border-color .2s, transform .2s;
+    }
+    .btn-action-alt:hover {
+      border-color: var(--orange);
+      transform: translateY(-1px);
+    }
+    .btn-action-alt svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+
+    /* Preview Column (Sticky on Desktop) */
+    .preview-column {
+      position: sticky;
+      top: 86px;
+    }
+    .preview-header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .preview-title {
+      font-size: .92rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .badge-resolution {
+      font-size: .74rem;
+      font-weight: 700;
+      color: var(--orange-2);
+      background: rgba(241, 134, 31, 0.12);
+      border: 1px solid rgba(241, 134, 31, 0.25);
+      padding: 3px 8px;
+      border-radius: 999px;
+    }
+
+    /* THE WI-FI CARD BADGE MOCKUP */
+    .card-preview-viewport {
+      display: flex;
+      justify-content: center;
+      perspective: 1000px;
+    }
+
+    .wifi-card-badge {
+      width: 100%;
+      max-width: 440px;
+      aspect-ratio: 1 / 1.414; /* Standard A-series aspect ratio */
+      border-radius: 28px;
+      padding: 30px 26px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.18), 0 4px 16px rgba(0,0,0,0.06);
+      transition: background-color .3s, border-color .3s, color .3s;
+      user-select: none;
+    }
+
+    /* Light Badge Theme */
+    .wifi-card-badge.theme-light {
+      background: #ffffff;
+      color: #2e3439;
+      border: 1px solid rgba(46, 52, 57, 0.12);
+    }
+    .wifi-card-badge.theme-light .card-top-bar {
+      background: linear-gradient(90deg, #f1861f, #e85f1e);
+    }
+    .wifi-card-badge.theme-light .qr-backdrop {
+      background: #ffffff;
+      box-shadow: 0 10px 30px rgba(46, 52, 57, 0.08);
+      border: 1px solid rgba(46, 52, 57, 0.09);
+    }
+    .wifi-card-badge.theme-light .credentials-box {
+      background: #f8fafc;
+      border: 1px solid rgba(46, 52, 57, 0.09);
+    }
+    .wifi-card-badge.theme-light .cred-label {
+      color: #717d86;
+    }
+    .wifi-card-badge.theme-light .cred-val {
+      color: #212529;
+    }
+
+    /* Dark Badge Theme */
+    .wifi-card-badge.theme-dark {
+      background: #171a1d;
+      color: #f1f5f9;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+    }
+    .wifi-card-badge.theme-dark .card-top-bar {
+      background: linear-gradient(90deg, #f1861f, #e85f1e);
+    }
+    .wifi-card-badge.theme-dark .qr-backdrop {
+      background: #1f2429;
+      box-shadow: 0 14px 40px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+    }
+    .wifi-card-badge.theme-dark .credentials-box {
+      background: #20252b;
+      border: 1px solid rgba(255, 255, 255, 0.10);
+    }
+    .wifi-card-badge.theme-dark .cred-label {
+      color: #94a3b8;
+    }
+    .wifi-card-badge.theme-dark .cred-val {
+      color: #ffffff;
+    }
+
+    .card-top-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 7px;
+    }
+
+    .card-logo-container {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      margin-top: 6px;
+    }
+    .card-logo-svg {
+      height: 48px;
+      width: auto;
+      max-width: 220px;
+      display: block;
+    }
+
+    .card-header-text {
+      text-align: center;
+      margin-top: 8px;
+      margin-bottom: 6px;
+    }
+    .card-eyebrow {
+      font-size: .68rem;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--orange);
+    }
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 900;
+      letter-spacing: -.02em;
+      margin: 2px 0 0;
+      line-height: 1.2;
+    }
+
+    .card-cta-banner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      text-align: center;
+      padding: 6px 12px;
+      border-radius: 999px;
+      margin: 4px 0 10px;
+      font-size: .74rem;
+      font-weight: 700;
+      background: rgba(241, 134, 31, 0.12);
+      color: var(--orange-2);
+      border: 1px solid rgba(241, 134, 31, 0.22);
+      max-width: 95%;
+    }
+    .card-cta-banner svg {
+      width: 14px;
+      height: 14px;
+      fill: currentColor;
+      flex-shrink: 0;
+    }
+
+    /* QR Code Display Container */
+    .qr-backdrop {
+      width: min(240px, 64vw);
+      height: min(240px, 64vw);
+      border-radius: 20px;
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      margin-bottom: 12px;
+      transition: background-color .3s;
+    }
+    #preview-qr-canvas {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    /* Credentials Display Box */
+    .credentials-box {
+      width: 100%;
+      border-radius: 16px;
+      padding: 12px 16px;
+      margin-bottom: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .cred-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: .84rem;
+    }
+    .cred-label {
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: .70rem;
+      letter-spacing: .05em;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .cred-val {
+      font-weight: 800;
+      font-size: .90rem;
+      max-width: 65%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-align: right;
+    }
+    .cred-val.mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+    .cred-security-badge {
+      font-size: .65rem;
+      font-weight: 800;
+      background: rgba(241, 134, 31, 0.16);
+      color: var(--orange-2);
+      padding: 2px 7px;
+      border-radius: 6px;
+      letter-spacing: .02em;
+    }
+
+    /* Card Footer */
+    .card-footer {
+      width: 100%;
+      text-align: center;
+      font-size: .70rem;
+      color: #94a3b8;
+      border-top: 1px solid var(--card-border);
+      padding-top: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card-footer-motto {
+      font-weight: 800;
+      color: var(--orange);
+    }
+    .card-footer-link {
+      font-weight: 600;
+      opacity: .8;
+    }
+
+    /* Toast Notification */
+    .toast-msg {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #1f2429;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 999px;
+      font-size: .9rem;
+      font-weight: 700;
+      box-shadow: 0 16px 36px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      z-index: 100;
+      opacity: 0;
+      transition: transform .3s cubic-bezier(0.18, 0.89, 0.32, 1.28), opacity .3s;
+      pointer-events: none;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    .toast-msg.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* Print Styles */
+    @media print {
+      body {
+        background: white !important;
+        color: black !important;
+      }
+      nav, .config-card, .export-box, .header-intro, .preview-header-bar, .orb, .toast-msg {
+        display: none !important;
+      }
+      main { padding: 0 !important; }
+      .generator-grid { display: block !important; }
+      .preview-column { position: static !important; }
+      .card-preview-viewport {
+        margin: 0 auto;
+        padding: 0;
+      }
+      .wifi-card-badge {
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+        page-break-inside: avoid;
+        width: 100% !important;
+        max-width: 100% !important;
+        height: 98vh !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="orb one"></div>
+  <div class="orb two"></div>
+
+  <!-- Header Navigation -->
+  <nav>
+    <div class="nav-brand">
+      <a href="index.html" aria-label="Citronet Início">
+        <svg class="nav-logo-svg" id="Camada_nav_logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 586.69 343.62">
+          <defs>
+            <style>
+              .cls-nav-1 { fill: #2e3439; }
+              .cls-nav-2 { fill: #f1861f; }
+              .cls-nav-3 { fill: #db4b14; }
+              .cls-nav-4 { fill: #eb7619; }
+              .cls-nav-5 { fill: #e85f1e; }
+              .cls-nav-6 { fill: #f39c2e; }
+              html.dark .cls-nav-1 { fill: #ffffff; }
+            </style>
+          </defs>
+          <g>
+            <path class="cls-nav-2" d="M377.71,143.04c-19.33-16.08-43.14-25.39-68.23-26.78-28.3-1.56-55.91,7.03-78.91,23.54,8.04-7.36,17.38-13.02,27.2-17.78,14.44-6.63,29.84-10.48,45.75-10.86,29.71-.97,58.42,10.03,79.77,30.69l-5.58,1.18Z"/>
+            <path class="cls-nav-2" d="M150.18,99.11c-36.69,28.69-63.17,67.05-78.08,110.98,8.9-41.71,30.55-79.75,60.56-109.23,45.68-44.88,108.82-67.08,172.56-60.79,46.51,4.59,90.46,23.9,125.34,55.15.21.19.38.24.25.68-41.05-30.31-91.16-46.5-142.36-45.7-50.19.79-98.68,17.96-138.26,48.91Z"/>
+            <path class="cls-nav-5" d="M299.36,212.04c-5.22-3.24-6.87-8.74-5.79-14.65l144.89-77-131.79,90.03c-2.19,1.58-4.56,2.14-7.31,1.63Z"/>
+            <path class="cls-nav-5" d="M424.36,82.53c-34.8-29.83-77-48.4-122.38-53.57l-.13-28.85c54.96,2.12,107.1,23.89,147.42,61.02l-24.92,21.41Z"/>
+            <path class="cls-nav-3" d="M516.13,171.5l-27.34.38c-11.98-29.22-29.4-55.33-51.86-77.8l24.75-20.65c26.03,27.91,44.59,61.35,54.45,98.07Z"/>
+            <path class="cls-nav-4" d="M225.12,33.52c-20.76,4.87-40.35,12.43-58.92,22.6l-10.3-11.08C193.97,17.04,239.65,1.27,286.79,0l.2,27.76c-20.96-.95-41.47,1.02-61.88,5.76Z"/>
+            <path class="cls-nav-6" d="M152.1,64.6c-26.02,16.56-47.08,37.62-65.4,62.54,13.51-28.12,33.39-52.17,56.65-72.28l8.75,9.74Z"/>
+            <path class="cls-nav-2" d="M415.11,197.34c-5.09-13.39-11.46-26.08-20.91-37.47,1.18-.4,2.37-.8,3.55-1.2,7.82,11.6,14.29,24.39,17.36,38.67Z"/>
+            <g>
+              <path class="cls-nav-1" d="M407.21,288.8c-1.14-10.08-9.74-17.28-19.69-16.88-9.1.67-16.31,7.28-17.64,16.36v54.69s-21.36-.02-21.36-.02v-76.73s-12.18-.04-12.18-.04l9.04-15.15h24.26s.17,5.05.17,5.05c12.52-6.5,26.93-6.55,39.37.92,10.36,6.22,18.72,18.11,18.77,31.32l.2,54.75-20.95.02.02-54.29Z"/>
+              <path class="cls-nav-1" d="M457.68,311.65c4.5,6.64,11.48,10.96,19.45,11.41,7.46.43,14.34-2.87,19.27-8.29,2.27-2.29,3.73-4.9,5.2-7.77l22.03.02c-2.1,7.93-5.91,14.91-11.32,20.8-18.55,20.15-48.39,20.22-67.11.7-16.54-17.24-17.08-44.03-1.11-61.83,17.26-19.24,45.04-21.42,64.68-3.77,5.55,5.07,9.77,11.14,12.76,18.11l-9.54,16.19-27.97.04,10.76-18.61c-4.32-3.79-9.62-6.17-15.41-6.43-6.92-.07-13.14,2.71-18.07,7.36-8.92,8.42-10.6,21.73-3.6,32.07Z"/>
+              <path class="cls-nav-1" d="M567.51,322.67l19.17-.04v21s-19.58-.01-19.58-.01c-21.41-2.77-38.26-19.59-41.12-40.97l.02-57.97-11.27-.17,8.34-14.53,23.67-.03v22.02s39.94,0,39.94,0v20.44s-39.85,0-39.85,0v30.31c.94,10.95,9.59,19.36,20.68,19.98Z"/>
+              <path class="cls-nav-1" d="M347.55,297.28c0,25.48-20.66,46.14-46.14,46.14s-46.14-20.66-46.14-46.14,20.66-46.14,46.14-46.14,46.14,20.66,46.14,46.14ZM326.77,297.28c0-13.89-11.26-25.16-25.15-25.16s-25.15,11.26-25.15,25.16,11.26,25.16,25.15,25.16,25.15-11.26,25.15-25.16Z"/>
+              <path class="cls-nav-1" d="M245.5,271.57c-11.97-.07-21.01,7.78-22.48,19.51l.02,52.27h-20.84s0-77.52,0-77.52l-11.61-.15,8.85-14.39,23.51-.03.19,7c14.74-8.81,32.14-9.82,45.6,2.08l-14.55,14.24c-2.63-1.88-5.35-2.78-8.71-3.02Z"/>
+              <path class="cls-nav-1" d="M26.79,314.06c7.7,8.68,20.08,11.55,30.53,5.97,5.47-2.92,9.54-7.4,12.18-13l21.46.02c-3.65,14.39-13.29,26.16-26.55,32.29-18.47,8.44-39.32,3.34-52.63-11.39-15.71-17.38-15.69-43.49,0-60.88,14.01-15.54,36.24-20.27,55.09-10.04,11.7,6.35,20.16,17.24,23.71,30.45l-21.46.05c-2.7-5.54-6.82-9.91-12.2-12.74-11.85-6.23-26.08-1.33-32.84,9.76-5.75,9.43-4.6,21.25,2.72,29.5Z"/>
+              <path class="cls-nav-1" d="M188.68,343.44h-19.25c-21.62-2.61-38.74-19.57-41.54-41.16l.03-57.81-9.03-.09-.03,6.66h-20.42s0-20.73,0-20.73l20.38-.03.19,9.74,6.03-10.33,23.69-.03.02,22.02h39.94s0,20.52,0,20.52h-39.87s0,30.19,0,30.19c.87,10.85,9.32,19.16,20.14,19.99l19.71-.02v21.08Z"/>
+              <rect class="cls-nav-1" x="98.42" y="257.65" width="20.44" height="85.47"/>
+            </g>
+          </g>
+        </svg>
+      </a>
+      <span class="nav-badge-pill">Wi-Fi Connect</span>
+    </div>
+
+    <div class="nav-actions">
+      <!-- Dark/Light Theme Toggle -->
+      <button type="button" class="theme-toggle-btn" id="theme-toggle-btn" aria-label="Alternar modo claro e escuro">
+        <svg id="theme-icon-moon" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-3.03 0-5.5-2.47-5.5-5.5 0-1.82.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg>
+        <svg id="theme-icon-sun" style="display:none;" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/></svg>
+        <span id="theme-btn-label">Modo Escuro</span>
+      </button>
+
+      <a href="index.html" class="nav-back-link">
+        <span>← Voltar ao Início</span>
+      </a>
+    </div>
+  </nav>
+
+  <main>
+    <div class="container">
+      <div class="header-intro">
+        <span class="eyebrow-tag">Placas Inteligentes Citronet</span>
+        <h1>Gerador de Placa <span class="gradient-word">QR Code Wi-Fi</span></h1>
+        <p>Crie placas personalizadas e elegantes para sua casa, recepção ou comércio. Seus clientes e visitas conectam automaticamente apenas apontando a câmera do celular.</p>
+      </div>
+
+      <div class="generator-grid">
+        <!-- CONFIGURATION PANEL (Left) -->
+        <div class="config-column">
+          <!-- Section 1: Network Data -->
+          <div class="config-card">
+            <div class="config-card-header">
+              <h2>
+                <span class="icon-bubble">📡</span>
+                Dados da Conexão Wi-Fi
+              </h2>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="input-ssid">Nome da Rede Wi-Fi (SSID) *</label>
+              <input type="text" id="input-ssid" class="form-input" placeholder="Ex: Citronet_Fibra_Casa" value="Citronet_Fibra_Casa" autocomplete="off" spellcheck="false">
+              <div class="form-hint">O nome exato da rede sem fio que aparece nos aparelhos.</div>
+            </div>
+
+            <div class="form-group" id="group-password">
+              <label class="form-label" for="input-password">Senha da Rede</label>
+              <div class="input-wrapper">
+                <input type="text" id="input-password" class="form-input" placeholder="Digite a senha do Wi-Fi" value="citronet2026" autocomplete="off" spellcheck="false">
+                <button type="button" class="input-icon-btn" id="toggle-pw-visibility" title="Ocultar/Exibir senha">
+                  <svg id="eye-open-icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                  <svg id="eye-closed-icon" style="display:none;" viewBox="0 0 24 24"><path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.44-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/></svg>
+                </button>
+              </div>
+              <div class="form-hint">A senha será codificada no padrão internacional Wi-Fi.</div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Tipo de Segurança / Criptografia</label>
+              <div class="segmented-group" id="seg-security">
+                <div class="segmented-option active" data-value="WPA">WPA / WPA2 / WPA3</div>
+                <div class="segmented-option" data-value="WEP">WEP</div>
+                <div class="segmented-option" data-value="nopass">Aberta (Sem Senha)</div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="checkbox-row">
+                <input type="checkbox" id="check-hidden">
+                <span>Esta rede é oculta (Hidden SSID)</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Section 2: Visual Customization -->
+          <div class="config-card">
+            <div class="config-card-header">
+              <h2>
+                <span class="icon-bubble">🎨</span>
+                Personalização Visual da Placa
+              </h2>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Tema da Placa de Impressão</label>
+              <div class="segmented-group" id="seg-card-theme">
+                <div class="segmented-option active" data-value="light">Placa Clara</div>
+                <div class="segmented-option" data-value="dark">Placa Escura</div>
+              </div>
+              <div class="form-hint">Alterne entre acabamento branco clássico ou grafite escuro sofisticado.</div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Estilo dos Pontos do QR Code</label>
+              <div class="segmented-group" id="seg-qr-style">
+                <div class="segmented-option active" data-value="rounded">Arredondado Suave (QRPlus)</div>
+                <div class="segmented-option" data-value="dots">Círculos (Dots)</div>
+                <div class="segmented-option" data-value="squares">Quadrado</div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="checkbox-row">
+                <input type="checkbox" id="check-show-password" checked>
+                <span>Exibir texto legível da senha abaixo do QR Code</span>
+              </label>
+              <div class="form-hint">Desmarque para ocultar a senha da placa impressa (ideal para condomínios e restaurantes).</div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="input-subtitle">Subtítulo Personalizado da Placa</label>
+              <input type="text" id="input-subtitle" class="form-input" placeholder="Ex: Wi-Fi de Alta Velocidade Citronet" value="Wi-Fi de Alta Velocidade Citronet" maxlength="50">
+            </div>
+          </div>
+
+          <!-- Section 3: Export & Downloads -->
+          <div class="export-box">
+            <div class="export-box-title">
+              <span>📥</span> Baixar e Compartilhar
+            </div>
+
+            <!-- Download PNG Button (2480x3508 px) -->
+            <button type="button" class="btn-main-export" id="btn-download-png">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+              <span>Baixar Imagem PNG em Alta Resolução</span>
+            </button>
+            <div class="form-hint" style="text-align:center; margin-top:-6px; margin-bottom:16px;">
+              Formato rasterizado com <strong>2480 x 3508 pixels</strong> (300 DPI / Proporção A4).
+            </div>
+
+            <!-- PDF Format Buttons -->
+            <label class="form-label" style="margin-bottom:8px;">Exportar em PDF com Margens de Corte:</label>
+            <div class="pdf-actions-row">
+              <button type="button" class="btn-pdf-format" data-pdf-format="a4" title="Baixar PDF pronto para imprimir em folha A4 padrão">
+                <span class="pdf-title">PDF A4</span>
+                <span class="pdf-dim">210 × 297 mm</span>
+              </button>
+              <button type="button" class="btn-pdf-format" data-pdf-format="a5" title="Baixar PDF tamanho A5 para displays acrílicos de mesa">
+                <span class="pdf-title">PDF A5</span>
+                <span class="pdf-dim">148 × 210 mm</span>
+              </button>
+              <button type="button" class="btn-pdf-format" data-pdf-format="a6" title="Baixar PDF tamanho A6 tipo cartão postal">
+                <span class="pdf-title">PDF A6</span>
+                <span class="pdf-dim">105 × 148 mm</span>
+              </button>
+            </div>
+
+            <!-- Secondary Quick Actions -->
+            <div class="secondary-actions-row">
+              <button type="button" class="btn-action-alt" id="btn-copy-image">
+                <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                <span>Copiar Imagem</span>
+              </button>
+              <button type="button" class="btn-action-alt" id="btn-print-badge">
+                <svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+                <span>Imprimir Placa</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- LIVE PREVIEW PANEL (Right) -->
+        <div class="preview-column">
+          <div class="preview-header-bar">
+            <div class="preview-title">
+              <span>👁️</span> Pré-visualização em Tempo Real
+            </div>
+            <span class="badge-resolution">Ultra HD • 300 DPI</span>
+          </div>
+
+          <!-- The Badge Card Viewport -->
+          <div class="card-preview-viewport">
+            <div class="wifi-card-badge theme-light" id="wifi-card-badge">
+              <div class="card-top-bar"></div>
+
+              <!-- Citronet Logo Container -->
+              <div class="card-logo-container">
+                <!-- Inlined SVG logo matching Citronet vector specification -->
+                <svg class="card-logo-svg" id="badge-citronet-logo" viewBox="0 0 586.69 343.62" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <style>
+                      .logo-brand-text { fill: #2e3439; transition: fill .3s; }
+                      .theme-dark .logo-brand-text { fill: #ffffff; }
+                      .logo-o1 { fill: #f1861f; }
+                      .logo-o2 { fill: #e85f1e; }
+                      .logo-o3 { fill: #db4b14; }
+                      .logo-o4 { fill: #eb7619; }
+                      .logo-o5 { fill: #f39c2e; }
+                    </style>
+                  </defs>
+                  <g>
+                    <path class="logo-o1" d="M377.71,143.04c-19.33-16.08-43.14-25.39-68.23-26.78-28.3-1.56-55.91,7.03-78.91,23.54,8.04-7.36,17.38-13.02,27.2-17.78,14.44-6.63,29.84-10.48,45.75-10.86,29.71-.97,58.42,10.03,79.77,30.69l-5.58,1.18Z"/>
+                    <path class="logo-o1" d="M150.18,99.11c-36.69,28.69-63.17,67.05-78.08,110.98,8.9-41.71,30.55-79.75,60.56-109.23,45.68-44.88,108.82-67.08,172.56-60.79,46.51,4.59,90.46,23.9,125.34,55.15.21.19.38.24.25.68-41.05-30.31-91.16-46.5-142.36-45.7-50.19.79-98.68,17.96-138.26,48.91Z"/>
+                    <path class="logo-o2" d="M299.36,212.04c-5.22-3.24-6.87-8.74-5.79-14.65l144.89-77-131.79,90.03c-2.19,1.58-4.56,2.14-7.31,1.63Z"/>
+                    <path class="logo-o2" d="M424.36,82.53c-34.8-29.83-77-48.4-122.38-53.57l-.13-28.85c54.96,2.12,107.1,23.89,147.42,61.02l-24.92,21.41Z"/>
+                    <path class="logo-o3" d="M516.13,171.5l-27.34.38c-11.98-29.22-29.4-55.33-51.86-77.8l24.75-20.65c26.03,27.91,44.59,61.35,54.45,98.07Z"/>
+                    <path class="logo-o4" d="M225.12,33.52c-20.76,4.87-40.35,12.43-58.92,22.6l-10.3-11.08C193.97,17.04,239.65,1.27,286.79,0l.2,27.76c-20.96-.95-41.47,1.02-61.88,5.76Z"/>
+                    <path class="logo-o5" d="M152.1,64.6c-26.02,16.56-47.08,37.62-65.4,62.54,13.51-28.12,33.39-52.17,56.65-72.28l8.75,9.74Z"/>
+                    <path class="logo-o1" d="M415.11,197.34c-5.09-13.39-11.46-26.08-20.91-37.47,1.18-.4,2.37-.8,3.55-1.2,7.82,11.6,14.29,24.39,17.36,38.67Z"/>
+                    <g>
+                      <path class="logo-brand-text" d="M407.21,288.8c-1.14-10.08-9.74-17.28-19.69-16.88-9.1.67-16.31,7.28-17.64,16.36v54.69s-21.36-.02-21.36-.02v-76.73s-12.18-.04-12.18-.04l9.04-15.15h24.26s.17,5.05.17,5.05c12.52-6.5,26.93-6.55,39.37.92,10.36,6.22,18.72,18.11,18.77,31.32l.2,54.75-20.95.02.02-54.29Z"/>
+                      <path class="logo-brand-text" d="M457.68,311.65c4.5,6.64,11.48,10.96,19.45,11.41,7.46.43,14.34-2.87,19.27-8.29,2.27-2.29,3.73-4.9,5.2-7.77l22.03.02c-2.1,7.93-5.91,14.91-11.32,20.8-18.55,20.15-48.39,20.22-67.11.7-16.54-17.24-17.08-44.03-1.11-61.83,17.26-19.24,45.04-21.42,64.68-3.77,5.55,5.07,9.77,11.14,12.76,18.11l-9.54,16.19-27.97.04,10.76-18.61c-4.32-3.79-9.62-6.17-15.41-6.43-6.92-.07-13.14,2.71-18.07,7.36-8.92,8.42-10.6,21.73-3.6,32.07Z"/>
+                      <path class="logo-brand-text" d="M567.51,322.67l19.17-.04v21s-19.58-.01-19.58-.01c-21.41-2.77-38.26-19.59-41.12-40.97l.02-57.97-11.27-.17,8.34-14.53,23.67-.03v22.02s39.94,0,39.94,0v20.44s-39.85,0-39.85,0v30.31c.94,10.95,9.59,19.36,20.68,19.98Z"/>
+                      <path class="logo-brand-text" d="M347.55,297.28c0,25.48-20.66,46.14-46.14,46.14s-46.14-20.66-46.14-46.14,20.66-46.14,46.14-46.14,46.14,20.66,46.14,46.14ZM326.77,297.28c0-13.89-11.26-25.16-25.15-25.16s-25.15,11.26-25.15,25.16,11.26,25.16,25.15,25.16,25.15-11.26,25.15-25.16Z"/>
+                      <path class="logo-brand-text" d="M245.5,271.57c-11.97-.07-21.01,7.78-22.48,19.51l.02,52.27h-20.84s0-77.52,0-77.52l-11.61-.15,8.85-14.39,23.51-.03.19,7c14.74-8.81,32.14-9.82,45.6,2.08l-14.55,14.24c-2.63-1.88-5.35-2.78-8.71-3.02Z"/>
+                      <path class="logo-brand-text" d="M26.79,314.06c7.7,8.68,20.08,11.55,30.53,5.97,5.47-2.92,9.54-7.4,12.18-13l21.46.02c-3.65,14.39-13.29,26.16-26.55,32.29-18.47,8.44-39.32,3.34-52.63-11.39-15.71-17.38-15.69-43.49,0-60.88,14.01-15.54,36.24-20.27,55.09-10.04,11.7,6.35,20.16,17.24,23.71,30.45l-21.46.05c-2.7-5.54-6.82-9.91-12.2-12.74-11.85-6.23-26.08-1.33-32.84,9.76-5.75,9.43-4.6,21.25,2.72,29.5Z"/>
+                      <path class="logo-brand-text" d="M188.68,343.44h-19.25c-21.62-2.61-38.74-19.57-41.54-41.16l.03-57.81-9.03-.09-.03,6.66h-20.42s0-20.73,0-20.73l20.38-.03.19,9.74,6.03-10.33,23.69-.03.02,22.02h39.94s0,20.52,0,20.52h-39.87s0,30.19,0,30.19c.87,10.85,9.32,19.16,20.14,19.99l19.71-.02v21.08Z"/>
+                      <rect class="logo-brand-text" x="98.42" y="257.65" width="20.44" height="85.47"/>
+                    </g>
+                  </g>
+                </svg>
+              </div>
+
+              <!-- Header titles -->
+              <div class="card-header-text">
+                <div class="card-eyebrow">Rede Wi-Fi Citronet</div>
+                <div class="card-title" id="badge-card-title">Wi-Fi de Alta Velocidade Citronet</div>
+              </div>
+
+              <!-- Inviting CTA Text -->
+              <div class="card-cta-banner">
+                <svg viewBox="0 0 24 24"><path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98A16.88 16.88 0 0 0 12 4zm0 2.9c3.7 0 7.07 1.43 9.6 3.79L12 19.32 2.4 10.69A14.97 14.97 0 0 1 12 6.9z"/></svg>
+                <span>Aponte a câmera do seu celular para conectar automaticamente</span>
+              </div>
+
+              <!-- The Rounded QR Code in the middle -->
+              <div class="qr-backdrop">
+                <canvas id="preview-qr-canvas" width="400" height="400"></canvas>
+              </div>
+
+              <!-- Credentials Box directly below QR Code -->
+              <div class="credentials-box">
+                <div class="cred-row">
+                  <span class="cred-label">
+                    <span>📶</span> Nome da Rede (SSID):
+                  </span>
+                  <span class="cred-val" id="badge-val-ssid">Citronet_Fibra_Casa</span>
+                </div>
+                <div class="cred-row" id="badge-row-password">
+                  <span class="cred-label">
+                    <span>🔑</span> Senha:
+                  </span>
+                  <span class="cred-val mono" id="badge-val-pass">citronet2026</span>
+                </div>
+                <div class="cred-row">
+                  <span class="cred-label">
+                    <span>🛡️</span> Criptografia:
+                  </span>
+                  <span class="cred-security-badge" id="badge-val-security">WPA/WPA2/WPA3</span>
+                </div>
+              </div>
+
+              <!-- Card Footer -->
+              <div class="card-footer">
+                <span class="card-footer-motto">feito para ir além.</span>
+                <span class="card-footer-link">citronet.opik.net</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Toast notification -->
+  <div class="toast-msg" id="toast-msg">
+    <span id="toast-icon">✓</span>
+    <span id="toast-text">Imagem copiada com sucesso!</span>
+  </div>
+
+  <script>
+    /* =====================================================================
+       CITRONET WI-FI QR CODE GENERATOR SCRIPT
+       - Pure Client-Side HTML5 / CSS / Vanilla JS (Compatible with GitHub Pages)
+       - Real-time rounded-dot QR Code generation (QRPlus style)
+       - 2480x3508 High-Res PNG Rasterization (300 DPI)
+       - A4, A5, and A6 PDF Vectorized Page Layouts
+       - Dark & Light mode integration
+    ===================================================================== */
+
+    // App State
+    const state = {
+      ssid: "Citronet_Fibra_Casa",
+      password: "citronet2026",
+      security: "WPA", // 'WPA', 'WEP', 'nopass'
+      hidden: false,
+      cardTheme: "light", // 'light' or 'dark'
+      qrStyle: "rounded", // 'rounded', 'dots', 'squares'
+      showPassword: true,
+      subtitle: "Wi-Fi de Alta Velocidade Citronet"
+    };
+
+    // DOM Elements
+    const inputSsid = document.getElementById("input-ssid");
+    const inputPassword = document.getElementById("input-password");
+    const groupPassword = document.getElementById("group-password");
+    const togglePwBtn = document.getElementById("toggle-pw-visibility");
+    const eyeOpenIcon = document.getElementById("eye-open-icon");
+    const eyeClosedIcon = document.getElementById("eye-closed-icon");
+    const checkHidden = document.getElementById("check-hidden");
+    const checkShowPassword = document.getElementById("check-show-password");
+    const inputSubtitle = document.getElementById("input-subtitle");
+    const segSecurity = document.getElementById("seg-security");
+    const segCardTheme = document.getElementById("seg-card-theme");
+    const segQrStyle = document.getElementById("seg-qr-style");
+
+    // Preview elements
+    const wifiCardBadge = document.getElementById("wifi-card-badge");
+    const badgeCardTitle = document.getElementById("badge-card-title");
+    const badgeValSsid = document.getElementById("badge-val-ssid");
+    const badgeValPass = document.getElementById("badge-val-pass");
+    const badgeRowPassword = document.getElementById("badge-row-password");
+    const badgeValSecurity = document.getElementById("badge-val-security");
+    const previewCanvas = document.getElementById("preview-qr-canvas");
+
+    // Export Buttons
+    const btnDownloadPng = document.getElementById("btn-download-png");
+    const btnCopyImage = document.getElementById("btn-copy-image");
+    const btnPrintBadge = document.getElementById("btn-print-badge");
+    const themeToggleBtn = document.getElementById("theme-toggle-btn");
+    const themeIconMoon = document.getElementById("theme-icon-moon");
+    const themeIconSun = document.getElementById("theme-icon-sun");
+    const themeBtnLabel = document.getElementById("theme-btn-label");
+    const toastMsg = document.getElementById("toast-msg");
+    const toastText = document.getElementById("toast-text");
+
+    let isPasswordMaskedInInput = false;
+
+    // Toast helper
+    function showToast(message, isError = false) {
+      toastText.textContent = message;
+      document.getElementById("toast-icon").textContent = isError ? "⚠️" : "✓";
+      toastMsg.classList.add("show");
+      setTimeout(() => {
+        toastMsg.classList.remove("show");
+      }, 3200);
+    }
+
+    // Wi-Fi Standard Payload Construction
+    function getWifiPayload() {
+      const escape = (str) => (str || "").replace(/([\\;,:"])/g, "\\$1");
+      const cleanSsid = escape(state.ssid.trim());
+      const isHidden = state.hidden ? ";H:true" : "";
+
+      if (state.security === "nopass" || !state.password.trim()) {
+        return `WIFI:T:nopass;S:${cleanSsid}${isHidden};;`;
+      }
+      const cleanPass = escape(state.password);
+      return `WIFI:T:${state.security};S:${cleanSsid};P:${cleanPass}${isHidden};;`;
+    }
+
+    /* ---------------------------------------------------------------------
+       QR CODE GENERATOR ENGINE (Standalone with Soft Rounded Dots)
+    --------------------------------------------------------------------- */
+    function generateQrMatrix(text) {
+      // Uses qrcode-generator loaded via CDN, with internal safety fallback
+      try {
+        if (typeof qrcode !== "undefined") {
+          // Type 0 = auto-detect version, 'M' = 15% error correction
+          const qr = qrcode(0, 'M');
+          qr.addData(text);
+          qr.make();
+          const count = qr.getModuleCount();
+          const matrix = [];
+          for (let r = 0; r < count; r++) {
+            const row = [];
+            for (let c = 0; c < count; c++) {
+              row.push(qr.isDark(r, c));
+            }
+            matrix.push(row);
+          }
+          return { count, matrix };
+        }
+      } catch (e) {
+        console.warn("QR generator fallback:", e);
+      }
+      return null;
+    }
+
+    // Helper: is cell part of the 3 Corner Finder Patterns?
+    function isFinderPattern(r, c, count) {
+      // Top-Left 7x7
+      if (r < 7 && c < 7) return true;
+      // Top-Right 7x7
+      if (r < 7 && c >= count - 7) return true;
+      // Bottom-Left 7x7
+      if (r >= count - 7 && c < 7) return true;
+      return false;
+    }
+
+    // Draw Smooth Rounded Rectangle on 2D context
+    function drawRoundRect(ctx, x, y, w, h, r) {
+      if (w < 2 * r) r = w / 2;
+      if (h < 2 * r) r = h / 2;
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y, x + w, y, r);
+      ctx.closePath();
+    }
+
+    // Render QR Code onto target Canvas with rounded dots & Citronet styling
+    function renderQrToCanvas(canvas, payload, options = {}) {
+      const qrData = generateQrMatrix(payload);
+      if (!qrData) return;
+
+      const { count, matrix } = qrData;
+      const ctx = canvas.getContext("2d");
+      const size = canvas.width;
+      ctx.clearRect(0, 0, size, size);
+
+      const isDark = options.isDarkCard ?? (state.cardTheme === "dark");
+      const qrStyle = options.qrStyle || state.qrStyle;
+
+      // Color palette
+      const dataColor = isDark ? "#ffffff" : "#24292e";
+      const finderOuterColor = "#f1861f"; // Citronet primary orange
+      const finderInnerColor = "#e85f1e"; // Citronet flame orange
+
+      // Margin and sizing
+      const margin = Math.round(size * 0.05);
+      const innerSize = size - margin * 2;
+      const modSize = innerSize / count;
+
+      // 1. Draw Corner Finder Eyes with Smooth Rounded Corners (QRPlus style)
+      const finderPositions = [
+        { r: 0, c: 0 },
+        { r: 0, c: count - 7 },
+        { r: count - 7, c: 0 }
+      ];
+
+      finderPositions.forEach(({ r, c }) => {
+        const ox = margin + c * modSize;
+        const oy = margin + r * modSize;
+        const finderDim = 7 * modSize;
+
+        // Outer 7x7 rounded square
+        ctx.fillStyle = finderOuterColor;
+        drawRoundRect(ctx, ox, oy, finderDim, finderDim, modSize * 2.2);
+        ctx.fill();
+
+        // Inner 5x5 cutout
+        ctx.fillStyle = isDark ? "#1f2429" : "#ffffff";
+        drawRoundRect(ctx, ox + modSize, oy + modSize, finderDim - 2 * modSize, finderDim - 2 * modSize, modSize * 1.5);
+        ctx.fill();
+
+        // Central 3x3 solid rounded square
+        ctx.fillStyle = finderInnerColor;
+        drawRoundRect(ctx, ox + 2 * modSize, oy + 2 * modSize, finderDim - 4 * modSize, finderDim - 4 * modSize, modSize * 1.0);
+        ctx.fill();
+      });
+
+      // 2. Draw Data Modules with Selected Styling
+      ctx.fillStyle = dataColor;
+
+      for (let r = 0; r < count; r++) {
+        for (let c = 0; c < count; c++) {
+          if (isFinderPattern(r, c, count)) continue;
+          if (!matrix[r][c]) continue;
+
+          const mx = margin + c * modSize;
+          const my = margin + r * modSize;
+
+          if (qrStyle === "rounded") {
+            // Soft rounded squares with padding
+            const pad = modSize * 0.08;
+            const w = modSize - pad * 2;
+            const rad = w * 0.38;
+            drawRoundRect(ctx, mx + pad, my + pad, w, w, rad);
+            ctx.fill();
+          } else if (qrStyle === "dots") {
+            // Perfect circular dots
+            const cx = mx + modSize / 2;
+            const cy = my + modSize / 2;
+            const radius = (modSize / 2) * 0.88;
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.fill();
+          } else {
+            // Classic squares
+            ctx.fillRect(mx, my, modSize + 0.2, modSize + 0.2);
+          }
+        }
+      }
+    }
+
+    // Update real-time preview
+    function updatePreview() {
+      // Update form values into state
+      state.ssid = inputSsid.value || "Citronet_Wi-Fi";
+      state.password = inputPassword.value;
+      state.hidden = checkHidden.checked;
+      state.showPassword = checkShowPassword.checked;
+      state.subtitle = inputSubtitle.value || "Wi-Fi de Alta Velocidade Citronet";
+
+      // Card header & values
+      badgeCardTitle.textContent = state.subtitle;
+      badgeValSsid.textContent = state.ssid;
+
+      if (state.security === "nopass") {
+        badgeRowPassword.style.display = "none";
+        badgeValSecurity.textContent = "REDE ABERTA (SEM SENHA)";
+      } else {
+        badgeRowPassword.style.display = "flex";
+        badgeValSecurity.textContent = state.security === "WPA" ? "WPA/WPA2/WPA3" : state.security;
+        if (state.showPassword) {
+          badgeValPass.textContent = state.password || "(Sem senha)";
+        } else {
+          badgeValPass.textContent = "•••••••• (Solicite)";
+        }
+      }
+
+      // Card theme class
+      wifiCardBadge.className = `wifi-card-badge theme-${state.cardTheme}`;
+
+      // Render QR code
+      const payload = getWifiPayload();
+      renderQrToCanvas(previewCanvas, payload, { isDarkCard: state.cardTheme === "dark" });
+    }
+
+    /* ---------------------------------------------------------------------
+       HIGH-RESOLUTION 2480x3508 CANVAS COMPOSITOR (300 DPI A4)
+    --------------------------------------------------------------------- */
+    async function createHighResExportCanvas(width = 2480, height = 3508) {
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      const isDark = state.cardTheme === "dark";
+
+      // 1. Draw Clean Background
+      if (isDark) {
+        ctx.fillStyle = "#15181b";
+        ctx.fillRect(0, 0, width, height);
+
+        // Ambient radial glows
+        const g1 = ctx.createRadialGradient(width * 0.2, 500, 50, width * 0.2, 500, 1400);
+        g1.addColorStop(0, "rgba(241, 134, 31, 0.12)");
+        g1.addColorStop(1, "transparent");
+        ctx.fillStyle = g1;
+        ctx.fillRect(0, 0, width, height);
+
+        const g2 = ctx.createRadialGradient(width * 0.85, height - 600, 50, width * 0.85, height - 600, 1300);
+        g2.addColorStop(0, "rgba(232, 95, 30, 0.09)");
+        g2.addColorStop(1, "transparent");
+        ctx.fillStyle = g2;
+        ctx.fillRect(0, 0, width, height);
+
+        // Subtle outer border
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
+        ctx.lineWidth = 6;
+        drawRoundRect(ctx, 40, 40, width - 80, height - 80, 50);
+        ctx.stroke();
+      } else {
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, width, height);
+
+        // Ambient radial glow
+        const g1 = ctx.createRadialGradient(width * 0.85, 450, 50, width * 0.85, 450, 1300);
+        g1.addColorStop(0, "rgba(241, 134, 31, 0.08)");
+        g1.addColorStop(1, "transparent");
+        ctx.fillStyle = g1;
+        ctx.fillRect(0, 0, width, height);
+
+        const g2 = ctx.createRadialGradient(width * 0.15, height - 500, 50, width * 0.15, height - 500, 1100);
+        g2.addColorStop(0, "rgba(243, 156, 46, 0.06)");
+        g2.addColorStop(1, "transparent");
+        ctx.fillStyle = g2;
+        ctx.fillRect(0, 0, width, height);
+
+        // Subtle outer border
+        ctx.strokeStyle = "rgba(46, 52, 57, 0.12)";
+        ctx.lineWidth = 6;
+        drawRoundRect(ctx, 40, 40, width - 80, height - 80, 50);
+        ctx.stroke();
+      }
+
+      // Top Orange Gradient Header Bar
+      const topBarGrad = ctx.createLinearGradient(0, 0, width, 0);
+      topBarGrad.addColorStop(0, "#f1861f");
+      topBarGrad.addColorStop(1, "#e85f1e");
+      ctx.fillStyle = topBarGrad;
+      ctx.fillRect(40, 40, width - 80, 24);
+
+      // 2. Render Citronet Logo
+      // Convert inlined SVG to Image object for razor-sharp vector blitting
+      const logoSvg = document.getElementById("badge-citronet-logo").cloneNode(true);
+      const logoStyle = isDark ? ".logo-brand-text { fill: #ffffff; }" : ".logo-brand-text { fill: #2e3439; }";
+      logoSvg.querySelector("style").textContent += logoStyle;
+      const svgString = new XMLSerializer().serializeToString(logoSvg);
+      const svgDataUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgString);
+
+      const logoImg = await new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.src = svgDataUrl;
+      });
+
+      const logoW = 780;
+      const logoH = logoW * (343.62 / 586.69);
+      const logoX = (width - logoW) / 2;
+      const logoY = 170;
+      ctx.drawImage(logoImg, logoX, logoY, logoW, logoH);
+
+      // 3. Eyebrow Tagline
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#f1861f";
+      ctx.font = "800 36px Inter, sans-serif";
+      ctx.letterSpacing = "4px";
+      ctx.fillText("REDE WI-FI CITRONET", width / 2, 690);
+
+      // 4. Main Subtitle / Card Heading
+      ctx.fillStyle = isDark ? "#ffffff" : "#24292e";
+      ctx.font = "900 66px Inter, sans-serif";
+      ctx.letterSpacing = "-1px";
+      ctx.fillText(state.subtitle, width / 2, 780);
+
+      // 5. Inviting Call-To-Action Banner
+      const ctaY = 860;
+      const ctaW = 1920;
+      const ctaH = 130;
+      const ctaX = (width - ctaW) / 2;
+
+      ctx.fillStyle = isDark ? "rgba(241, 134, 31, 0.16)" : "rgba(241, 134, 31, 0.12)";
+      ctx.strokeStyle = "rgba(241, 134, 31, 0.3)";
+      ctx.lineWidth = 3;
+      drawRoundRect(ctx, ctaX, ctaY, ctaW, ctaH, 65);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#e85f1e";
+      ctx.font = "800 44px Inter, sans-serif";
+      ctx.fillText("Aponte a câmera do seu celular para conectar automaticamente", width / 2, ctaY + 80);
+
+      // 6. Draw High-Res QR Code Card Container
+      const qrBoxSize = 1380;
+      const qrBoxX = (width - qrBoxSize) / 2;
+      const qrBoxY = 1060;
+
+      ctx.fillStyle = isDark ? "#1f2429" : "#ffffff";
+      ctx.strokeStyle = isDark ? "rgba(255, 255, 255, 0.12)" : "rgba(46, 52, 57, 0.10)";
+      ctx.lineWidth = 4;
+      drawRoundRect(ctx, qrBoxX, qrBoxY, qrBoxSize, qrBoxSize, 60);
+      ctx.fill();
+      ctx.stroke();
+
+      // Render High-Res QR into an offscreen canvas (1260x1260 px)
+      const offscreenQr = document.createElement("canvas");
+      offscreenQr.width = 1260;
+      offscreenQr.height = 1260;
+      renderQrToCanvas(offscreenQr, getWifiPayload(), {
+        isDarkCard: isDark,
+        qrStyle: state.qrStyle
+      });
+
+      const qrMargin = (qrBoxSize - 1260) / 2;
+      ctx.drawImage(offscreenQr, qrBoxX + qrMargin, qrBoxY + qrMargin, 1260, 1260);
+
+      // 7. Credentials Details Box below QR Code
+      const credBoxY = 2510;
+      const credBoxW = 1920;
+      const credBoxH = state.security === "nopass" ? 360 : 480;
+      const credBoxX = (width - credBoxW) / 2;
+
+      ctx.fillStyle = isDark ? "#20252b" : "#f8fafc";
+      ctx.strokeStyle = isDark ? "rgba(255, 255, 255, 0.12)" : "rgba(46, 52, 57, 0.10)";
+      ctx.lineWidth = 3;
+      drawRoundRect(ctx, credBoxX, credBoxY, credBoxW, credBoxH, 40);
+      ctx.fill();
+      ctx.stroke();
+
+      // Row 1: SSID
+      ctx.textAlign = "left";
+      ctx.fillStyle = isDark ? "#94a3b8" : "#64748b";
+      ctx.font = "800 36px Inter, sans-serif";
+      ctx.fillText("NOME DA REDE (SSID):", credBoxX + 70, credBoxY + 95);
+
+      ctx.textAlign = "right";
+      ctx.fillStyle = isDark ? "#ffffff" : "#1e293b";
+      ctx.font = "900 52px Inter, sans-serif";
+      ctx.fillText(state.ssid, credBoxX + credBoxW - 70, credBoxY + 95);
+
+      // Row 2: Senha (if not open)
+      let currentY = credBoxY + 225;
+      if (state.security !== "nopass") {
+        ctx.textAlign = "left";
+        ctx.fillStyle = isDark ? "#94a3b8" : "#64748b";
+        ctx.font = "800 36px Inter, sans-serif";
+        ctx.fillText("SENHA DO WI-FI:", credBoxX + 70, currentY);
+
+        ctx.textAlign = "right";
+        ctx.fillStyle = isDark ? "#ffffff" : "#1e293b";
+        ctx.font = "800 50px monospace, Inter, sans-serif";
+        const passText = state.showPassword ? state.password : "•••••••• (Solicite)";
+        ctx.fillText(passText, credBoxX + credBoxW - 70, currentY);
+
+        currentY += 130;
+      }
+
+      // Row 3: Segurança / Criptografia
+      ctx.textAlign = "left";
+      ctx.fillStyle = isDark ? "#94a3b8" : "#64748b";
+      ctx.font = "800 36px Inter, sans-serif";
+      ctx.fillText("CRIPTOGRAFIA:", credBoxX + 70, currentY);
+
+      ctx.textAlign = "right";
+      ctx.fillStyle = "#e85f1e";
+      ctx.font = "800 38px Inter, sans-serif";
+      const secText = state.security === "nopass" ? "REDE ABERTA" : (state.security === "WPA" ? "WPA/WPA2/WPA3" : state.security);
+      ctx.fillText(secText, credBoxX + credBoxW - 70, currentY);
+
+      // 8. Footer Bar
+      const footerY = 3280;
+      ctx.strokeStyle = isDark ? "rgba(255,255,255,0.1)" : "rgba(46,52,57,0.1)";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(credBoxX, footerY - 50);
+      ctx.lineTo(credBoxX + credBoxW, footerY - 50);
+      ctx.stroke();
+
+      ctx.textAlign = "left";
+      ctx.fillStyle = "#f1861f";
+      ctx.font = "900 42px Inter, sans-serif";
+      ctx.fillText("Citronet Telecom • Feito para ir além.", credBoxX + 20, footerY);
+
+      ctx.textAlign = "right";
+      ctx.fillStyle = isDark ? "#94a3b8" : "#64748b";
+      ctx.font = "600 36px Inter, sans-serif";
+      ctx.fillText("Suporte: (84) 99169-5106 • citronet.opik.net", credBoxX + credBoxW - 20, footerY);
+
+      return canvas;
+    }
+
+    /* ---------------------------------------------------------------------
+       DOWNLOAD PNG (2480x3508 pixels)
+    --------------------------------------------------------------------- */
+    btnDownloadPng.addEventListener("click", async () => {
+      try {
+        btnDownloadPng.disabled = true;
+        btnDownloadPng.innerHTML = `<span>⏳ Gerando PNG em 2480x3508 px...</span>`;
+
+        const highResCanvas = await createHighResExportCanvas(2480, 3508);
+        const cleanSsid = state.ssid.replace(/[^a-zA-Z0-9_-]/g, "_");
+
+        highResCanvas.toBlob((blob) => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `placa-wifi-citronet-${cleanSsid}-2480x3508.png`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+
+          btnDownloadPng.disabled = false;
+          btnDownloadPng.innerHTML = `
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+            <span>Baixar Imagem PNG em Alta Resolução</span>
+          `;
+          showToast("Download PNG (2480x3508 px) concluído!");
+        }, "image/png");
+      } catch (err) {
+        console.error("Erro no download PNG:", err);
+        btnDownloadPng.disabled = false;
+        btnDownloadPng.textContent = "Baixar Imagem PNG";
+        showToast("Falha ao gerar PNG. Tente novamente.", true);
+      }
+    });
+
+    /* ---------------------------------------------------------------------
+       DOWNLOAD PDF (A4, A5, A6)
+    --------------------------------------------------------------------- */
+    document.querySelectorAll(".btn-pdf-format").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const format = btn.getAttribute("data-pdf-format"); // 'a4', 'a5', 'a6'
+        try {
+          const originalText = btn.innerHTML;
+          btn.innerHTML = `<span class="pdf-title">⏳ Gerando...</span>`;
+
+          const highResCanvas = await createHighResExportCanvas(2480, 3508);
+          const imgData = highResCanvas.toDataURL("image/png");
+
+          if (!window.jspdf || !window.jspdf.jsPDF) {
+            throw new Error("jsPDF não carregado.");
+          }
+
+          const { jsPDF } = window.jspdf;
+          const pdf = new jsPDF({
+            orientation: "portrait",
+            unit: "mm",
+            format: format
+          });
+
+          const pageWidth = pdf.internal.pageSize.getWidth();
+          const pageHeight = pdf.internal.pageSize.getHeight();
+
+          // Calculate margins ensuring standard 1:1.414 aspect ratio fits neatly
+          const margin = format === "a4" ? 10 : (format === "a5" ? 7 : 5);
+          const availW = pageWidth - margin * 2;
+          const availH = pageHeight - margin * 2;
+          const ratio = 2480 / 3508;
+
+          let targetW = availW;
+          let targetH = targetW / ratio;
+
+          if (targetH > availH) {
+            targetH = availH;
+            targetW = targetH * ratio;
+          }
+
+          const posX = (pageWidth - targetW) / 2;
+          const posY = (pageHeight - targetH) / 2;
+
+          pdf.addImage(imgData, "PNG", posX, posY, targetW, targetH, undefined, "FAST");
+
+          const cleanSsid = state.ssid.replace(/[^a-zA-Z0-9_-]/g, "_");
+          pdf.save(`placa-wifi-citronet-${cleanSsid}-${format.toUpperCase()}.pdf`);
+
+          btn.innerHTML = originalText;
+          showToast(`PDF ${format.toUpperCase()} gerado com sucesso!`);
+        } catch (err) {
+          console.error("Erro ao gerar PDF:", err);
+          showToast("Erro ao gerar PDF. Tente novamente.", true);
+        }
+      });
+    });
+
+    /* ---------------------------------------------------------------------
+       QUICK ACTIONS: COPY TO CLIPBOARD & PRINT
+    --------------------------------------------------------------------- */
+    btnCopyImage.addEventListener("click", async () => {
+      try {
+        btnCopyImage.disabled = true;
+        const canvas = await createHighResExportCanvas(1240, 1754);
+        canvas.toBlob(async (blob) => {
+          if (navigator.clipboard && navigator.clipboard.write) {
+            await navigator.clipboard.write([
+              new ClipboardItem({ "image/png": blob })
+            ]);
+            showToast("Placa copiada para a área de transferência!");
+          } else {
+            showToast("Seu navegador não suporta cópia direta de imagem.", true);
+          }
+          btnCopyImage.disabled = false;
+        }, "image/png");
+      } catch (err) {
+        console.error("Erro ao copiar imagem:", err);
+        btnCopyImage.disabled = false;
+        showToast("Não foi possível copiar a imagem.", true);
+      }
+    });
+
+    btnPrintBadge.addEventListener("click", () => {
+      window.print();
+    });
+
+    /* ---------------------------------------------------------------------
+       THEME & CONTROL EVENT LISTENERS
+    --------------------------------------------------------------------- */
+    // Input changes
+    inputSsid.addEventListener("input", updatePreview);
+    inputPassword.addEventListener("input", updatePreview);
+    inputSubtitle.addEventListener("input", updatePreview);
+    checkHidden.addEventListener("change", updatePreview);
+    checkShowPassword.addEventListener("change", updatePreview);
+
+    // Toggle password masking in form input
+    togglePwBtn.addEventListener("click", () => {
+      isPasswordMaskedInInput = !isPasswordMaskedInInput;
+      inputPassword.type = isPasswordMaskedInInput ? "password" : "text";
+      eyeOpenIcon.style.display = isPasswordMaskedInInput ? "none" : "block";
+      eyeClosedIcon.style.display = isPasswordMaskedInInput ? "block" : "none";
+    });
+
+    // Security segmented buttons
+    segSecurity.querySelectorAll(".segmented-option").forEach(btn => {
+      btn.addEventListener("click", () => {
+        segSecurity.querySelectorAll(".segmented-option").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        state.security = btn.getAttribute("data-value");
+        groupPassword.style.display = state.security === "nopass" ? "none" : "block";
+        updatePreview();
+      });
+    });
+
+    // Card Theme segmented buttons
+    segCardTheme.querySelectorAll(".segmented-option").forEach(btn => {
+      btn.addEventListener("click", () => {
+        segCardTheme.querySelectorAll(".segmented-option").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        state.cardTheme = btn.getAttribute("data-value");
+        updatePreview();
+      });
+    });
+
+    // QR Style segmented buttons
+    segQrStyle.querySelectorAll(".segmented-option").forEach(btn => {
+      btn.addEventListener("click", () => {
+        segQrStyle.querySelectorAll(".segmented-option").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        state.qrStyle = btn.getAttribute("data-value");
+        updatePreview();
+      });
+    });
+
+    // Page Theme Toggle (Dark / Light)
+    function applyPageTheme(isDark) {
+      if (isDark) {
+        document.documentElement.classList.add("dark");
+        themeIconMoon.style.display = "none";
+        themeIconSun.style.display = "block";
+        themeBtnLabel.textContent = "Modo Claro";
+      } else {
+        document.documentElement.classList.remove("dark");
+        themeIconMoon.style.display = "block";
+        themeIconSun.style.display = "none";
+        themeBtnLabel.textContent = "Modo Escuro";
+      }
+      localStorage.setItem("citronet_theme", isDark ? "dark" : "light");
+    }
+
+    themeToggleBtn.addEventListener("click", () => {
+      const isCurrentlyDark = document.documentElement.classList.contains("dark");
+      applyPageTheme(!isCurrentlyDark);
+      // Auto-adapt card theme to match active page theme
+      state.cardTheme = !isCurrentlyDark ? "dark" : "light";
+      segCardTheme.querySelectorAll(".segmented-option").forEach(b => {
+        b.classList.toggle("active", b.getAttribute("data-value") === state.cardTheme);
+      });
+      updatePreview();
+    });
+
+    // Initialize Theme from localStorage or OS Preference
+    const savedTheme = localStorage.getItem("citronet_theme");
+    const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    if (savedTheme === "dark" || (!savedTheme && prefersDark)) {
+      applyPageTheme(true);
+      state.cardTheme = "dark";
+      segCardTheme.querySelectorAll(".segmented-option").forEach(b => {
+        b.classList.toggle("active", b.getAttribute("data-value") === "dark");
+      });
+    }
+
+    // Initial render
+    updatePreview();
+  </script>
+</body>
+</html>
