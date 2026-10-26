@@ -1998,24 +1998,44 @@
        QUICK ACTIONS: COPY TO CLIPBOARD & PRINT
     --------------------------------------------------------------------- */
     btnCopyImage.addEventListener("click", async () => {
+      const originalHtml = btnCopyImage.innerHTML;
       try {
         btnCopyImage.disabled = true;
-        const canvas = await createHighResExportCanvas(1240, 1754);
-        canvas.toBlob(async (blob) => {
-          if (navigator.clipboard && navigator.clipboard.write) {
+        btnCopyImage.innerHTML = `<span>⏳ Copiando placa...</span>`;
+
+        // Unified export logic: renders the exact same unclipped 2480x3508 canvas as PNG/PDF
+        const highResCanvas = await createHighResExportCanvas(2480, 3508);
+
+        if (!navigator.clipboard || !navigator.clipboard.write || typeof ClipboardItem === "undefined") {
+          throw new Error("Clipboard API de imagem não suportada pelo navegador.");
+        }
+
+        highResCanvas.toBlob(async (blob) => {
+          if (!blob) {
+            btnCopyImage.disabled = false;
+            btnCopyImage.innerHTML = originalHtml;
+            showToast("Falha ao gerar os dados da imagem.", true);
+            return;
+          }
+
+          try {
             await navigator.clipboard.write([
               new ClipboardItem({ "image/png": blob })
             ]);
             showToast("Placa copiada para a área de transferência!");
-          } else {
-            showToast("Seu navegador não suporta cópia direta de imagem.", true);
+          } catch (clipboardErr) {
+            console.warn("Erro ao gravar na área de transferência:", clipboardErr);
+            showToast("Permissão negada ao copiar imagem para a área de transferência.", true);
+          } finally {
+            btnCopyImage.disabled = false;
+            btnCopyImage.innerHTML = originalHtml;
           }
-          btnCopyImage.disabled = false;
         }, "image/png");
       } catch (err) {
         console.error("Erro ao copiar imagem:", err);
         btnCopyImage.disabled = false;
-        showToast("Não foi possível copiar a imagem.", true);
+        btnCopyImage.innerHTML = originalHtml;
+        showToast("Seu navegador não suporta cópia direta de imagem.", true);
       }
     });
 
